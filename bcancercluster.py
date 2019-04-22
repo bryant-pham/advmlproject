@@ -43,8 +43,6 @@ all_data = all_data[:, 1:]
 clf = SVC(gamma='auto', C=1)
 # clf.fit(all_data, labels)
 
-# score = clf.score(val_sample.values[:, 1:], val_sample.values[:, 0])
-# print('val score: %s' % score)
 scores = cross_val_score(clf, all_data, labels, cv=10)
 print('cv scores: %s' % scores)
 print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))

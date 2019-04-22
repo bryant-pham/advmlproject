@@ -46,10 +46,10 @@ class SemiSupervisedKMeans:
             num_after_remove = data_copy.shape[0]
             diff = num_before_remove - num_after_remove
         print('c_score: %s' % self.c_score())
-        print('total labeled: %s' % np.sum(self.num_labeled))
         print('dist_traveled: %s' % self.dist_traveled)
-        print('total unlabeled: %s ' % len(unlabeled_data))
         print('centers: %s' % self.centers)
+        print('total unlabeled: %s ' % len(unlabeled_data))
+        print('total labels given: %s' % np.sum(self.num_labeled))
         return labels_for_unlabeled_data
 
     def closest_cluster_index(self, vec, threshold):

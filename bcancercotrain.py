@@ -37,3 +37,14 @@ not_predicted = np.where(predicted_labels == -1)
 predicted_labels = np.delete(predicted_labels, not_predicted)
 unlabeled_labels = np.delete(unlabeled_labels, not_predicted)
 print('labeling accuracy: %s' % (1 - np.mean(unlabeled_labels != predicted_labels)))
+
+# SVM performance
+all_data = cotrain_model.get_full_pts()
+labels = all_data[:, 0]
+all_data = all_data[:, 1:]
+clf = SVC(gamma='auto', C=1)
+# clf.fit(all_data, labels)
+
+scores = cross_val_score(clf, all_data, labels, cv=10)
+print('cv scores: %s' % scores)
+print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))

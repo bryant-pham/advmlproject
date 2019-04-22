@@ -24,7 +24,7 @@ class Cotrain:
         shape = labeled_data[0].shape
         self.nn = Sequential()
         self.nn.add(Dense(32, activation='relu', input_shape=shape))
-        # self.nn.add(Dense(32, activation='relu'))
+        # self.nn.add(Dense(64, activation='relu'))
         self.nn.add(Dense(units=num_unique_labels, activation='softmax'))
         self.nn.compile(optimizer='adadelta',
                       loss='categorical_crossentropy',
@@ -70,7 +70,7 @@ class Cotrain:
                 self.svm.fit(self.labeled_data, self.labels)
 
         print('total unlabeled: %s ' % len(unlabeled_data))
-        print('total labeled: %s ' % self.num_labeled)
+        print('total labels given: %s ' % self.num_labeled)
 
         return labels_for_unlabeled_data
 
