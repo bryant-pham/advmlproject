@@ -29,7 +29,7 @@ class SemiSupervisedKMeans:
             self.centers[i] = center
 
     def fit(self, unlabeled_data, threshold):
-        labels = list()
+        labels = np.full(unlabeled_data.shape[0], -1)
         data_copy = np.copy(unlabeled_data)
         diff = 1
         while diff != 0:
@@ -39,7 +39,7 @@ class SemiSupervisedKMeans:
                 if label > -1:
                     delete_from_unlabeled.append(i)
                     self.num_labeled[label] += 1
-                    labels.append(label)
+                    labels[i] = label
                     unlabeled = np.insert(unlabeled, 0, label)
                     self.cluster_pts[label] = np.vstack([self.cluster_pts[label], unlabeled])
             self.recompute_centers()
@@ -77,3 +77,6 @@ class SemiSupervisedKMeans:
 
     def get_cluster_pts(self):
         return self.cluster_pts
+
+    def get_full_pts(self):
+        return np.vstack(list(self.cluster_pts.values()))
