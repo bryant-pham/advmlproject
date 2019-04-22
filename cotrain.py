@@ -81,5 +81,5 @@ class Cotrain:
             self.enc.fit(label_reshape)
         return self.enc.transform(label_reshape).toarray()
 
-    def get_full_pts(self):
+    def get_labeled_data(self):
         return np.insert(self.labeled_data, 0, self.labels, axis=1)  # Add label to unlabeled point

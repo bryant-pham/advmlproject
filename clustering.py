@@ -76,5 +76,5 @@ class SemiSupervisedKMeans:
     def get_cluster_pts(self):
         return self.cluster_pts
 
-    def get_full_pts(self):
+    def get_labeled_data(self):
         return np.vstack(list(self.cluster_pts.values()))
