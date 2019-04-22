@@ -1,4 +1,6 @@
 bin
+.idea
+__pycache__
 .DS_Store
 .Python
 lib
