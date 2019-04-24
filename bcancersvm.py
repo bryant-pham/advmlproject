@@ -10,10 +10,9 @@ total_count = df.shape[0]
 train_count = int(total_count)
 test_count = total_count - train_count
 
-total_runs = 100
-all_stats = np.empty((total_runs, 1))
+total_runs = 500
+all_stats = np.empty((total_runs, 2))
 sample = 0
-
 while sample < total_runs:
     try:
         training_data = df.sample(train_count, replace=True)
@@ -42,5 +41,7 @@ while sample < total_runs:
         print('Failed run')
 
 mean_stats = np.mean(all_stats, axis=0)
+stddev = all_stats[:, 1:].flatten().std()
+mean_stats = np.insert(mean_stats, 2, stddev)
 np.savetxt('bcancersvm.csv', mean_stats, fmt='%.3e', delimiter=',')
 print(mean_stats)
