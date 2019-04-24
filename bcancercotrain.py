@@ -10,10 +10,10 @@ df = pd.read_csv(f)
 udf = pd.read_csv(u)
 
 total_count = df.shape[0]
-train_count = int(total_count * 0.8)
+train_count = int(total_count)
 test_count = total_count - train_count
 
-total_runs = 1000
+total_runs = 100
 all_stats = np.empty((total_runs, 4))
 sample = 0
 
