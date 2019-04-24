@@ -13,40 +13,60 @@ total_count = df.shape[0]
 train_count = int(total_count * 0.8)
 test_count = total_count - train_count
 
-training_data = df.sample(train_count)
-df = df[~df.index.isin(training_data.index)]
-test_sample = df[~df.index.isin(training_data.index)]
-print('training count: %s' % train_count)
-print('test count: %s' % test_count)
+total_runs = 1000
+all_stats = np.empty((total_runs, 4))
+sample = 0
 
-training_data = training_data.values
-training_labels = training_data[:, 0]
-training_data = np.delete(training_data, 0, 1)
-unlabeled_data = udf.values
-unlabeled_labels = unlabeled_data[:, 0]
-unlabeled_data = np.delete(unlabeled_data, 0, 1)
+while sample < total_runs:
+    try:
+        training_data = df.sample(train_count, replace=True)
+        test_sample = df[~df.index.isin(training_data.index)]
+        print('training count: %s' % train_count)
+        print('test count: %s' % test_count)
 
-kmeans = SemiSupervisedKMeans(num_clusters=2)
-kmeans.initialize(training_data, training_labels)
-kmeans.fit(unlabeled_data, 7)
+        training_data = training_data.values
+        training_labels = training_data[:, 0]
+        training_data = np.delete(training_data, 0, 1)
+        unlabeled_data = udf.values
+        unlabeled_labels = unlabeled_data[:, 0]
+        unlabeled_data = np.delete(unlabeled_data, 0, 1)
 
-# Label prediction accuracy setup
-unlabeled_truth = np.insert(unlabeled_data, 0, unlabeled_labels, axis=1)
-unlabeled_truth_set = set([tuple(x) for x in unlabeled_truth])
+        kmeans = SemiSupervisedKMeans(num_clusters=2)
+        kmeans.initialize(training_data, training_labels)
+        kmeans.fit(unlabeled_data, 7)
 
-# Clustering prediction accuracy
-cluster_predicted_data = kmeans.get_unlabeled_predictions()
-cluster_predicted_set = set([tuple(x) for x in cluster_predicted_data])
-cluster_correct_matches = np.array([x for x in cluster_predicted_set & unlabeled_truth_set])
-print('clustering labeling accuracy: %s' % (len(cluster_correct_matches) / len(cluster_predicted_data)))
-print()
+        # Label prediction accuracy setup
+        unlabeled_truth = np.insert(unlabeled_data, 0, unlabeled_labels, axis=1)
+        unlabeled_truth_set = set([tuple(x) for x in unlabeled_truth])
 
-# Combined SVM performance
-new_labeled_data = kmeans.get_full_labeled_data()
-labels = new_labeled_data[:, 0]
-new_labeled_data = new_labeled_data[:, 1:]
-clf = SVC(gamma='auto', C=1)
+        # Clustering prediction accuracy
+        cluster_unlabeled_predictions = kmeans.get_unlabeled_predictions()
+        cluster_unlabeled_predictions_set = set([tuple(x) for x in cluster_unlabeled_predictions])
+        cluster_correct_matches = np.array([x for x in cluster_unlabeled_predictions_set & unlabeled_truth_set])
+        cluster_label_acc = len(cluster_correct_matches) / len(cluster_unlabeled_predictions)
+        print('clustering labeling accuracy: %s' % cluster_label_acc)
+        print()
 
-scores = cross_val_score(clf, new_labeled_data, labels, cv=10)
-print('cluster svm cv scores: %s' % scores)
-print("cluster svm Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+        # Combined SVM performance
+        new_labeled_data = kmeans.get_full_labeled_data()
+        labels = new_labeled_data[:, 0]
+        new_labeled_data = new_labeled_data[:, 1:]
+        clf = SVC(gamma='auto', C=1)
+
+        scores = cross_val_score(clf, new_labeled_data, labels, cv=10)
+        avg_score = scores.mean()
+        print('cluster svm cv scores: %s' % scores)
+        print("cluster svm Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+
+        total_unlabeled_count = len(unlabeled_data)
+        cluster_labels_given = len(cluster_unlabeled_predictions)
+        run_stats = np.array([total_unlabeled_count,
+                              cluster_labels_given, cluster_label_acc,
+                              avg_score])
+        all_stats[sample] = run_stats
+        sample += 1
+    except:
+        print('Failed run')
+mean_stats = np.mean(all_stats, axis=0)
+np.savetxt('bcancercluster.csv', mean_stats, fmt='%.3e', delimiter=',')
+print(mean_stats)

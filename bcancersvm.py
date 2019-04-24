@@ -10,21 +10,37 @@ total_count = df.shape[0]
 train_count = int(total_count * 0.8)
 test_count = total_count - train_count
 
-training_data = df.sample(train_count)
-df = df[~df.index.isin(training_data.index)]
-test_sample = df[~df.index.isin(training_data.index)]
+total_runs = 1000
+all_stats = np.empty((total_runs, 1))
+sample = 0
 
-training_data = training_data.values
-training_labels = training_data[:, 0]
-training_data = np.delete(training_data, 0, 1)
+while sample < total_runs:
+    try:
+        training_data = df.sample(train_count, replace=True)
+        test_sample = df[~df.index.isin(training_data.index)]
 
-print('training count: %s' % train_count)
-print('test count: %s' % test_count)
+        training_data = training_data.values
+        training_labels = training_data[:, 0]
+        training_data = np.delete(training_data, 0, 1)
 
-# SVM performance
-clf = SVC(gamma='auto', C=1)
-# clf.fit(all_data, labels)
+        print('training count: %s' % train_count)
+        print('test count: %s' % test_count)
 
-scores = cross_val_score(clf, training_data, training_labels, cv=10)
-print('solo svm cv scores: %s' % scores)
-print("solo svm Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+        # SVM performance
+        clf = SVC(gamma='auto', C=1)
+
+        scores = cross_val_score(clf, training_data, training_labels, cv=10)
+        avg_score = scores.mean()
+        print('solo svm cv scores: %s' % scores)
+        print("solo svm Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+
+        run_stats = np.array([train_count,
+                              avg_score])
+        all_stats[sample] = run_stats
+        sample += 1
+    except:
+        print('Failed run')
+
+mean_stats = np.mean(all_stats, axis=0)
+np.savetxt('bcancercombined.csv', mean_stats, fmt='%.3e', delimiter=',')
+print(mean_stats)
