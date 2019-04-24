@@ -53,6 +53,17 @@ class SemiSupervisedKMeans:
         print('total labels given: %s' % np.sum(self.num_labeled))
         self.unpredicted = unlabeled_copy
 
+    def predict(self, unlabeled_data, threshold):
+        result = list()
+        for i, unlabeled in enumerate(unlabeled_data):
+            label = self.closest_cluster_index(unlabeled, threshold)
+            if label > -1:
+                predicted = np.insert(unlabeled, 0, label)
+                result.append(predicted)
+        print('Total to predict: %s' % len(unlabeled_data))
+        print('Total predicted: %s' % len(result))
+        return np.array(result)
+
     def closest_cluster_index(self, vec, threshold):
         index = -1
         min_dist = sys.maxsize
@@ -80,7 +91,7 @@ class SemiSupervisedKMeans:
     def get_full_labeled_data(self):
         return np.vstack(list(self.cluster_pts.values()))
 
-    def get_predicted_data(self):
+    def get_unlabeled_predictions(self):
         return self.predicted
 
     def get_unpredicted_data(self):

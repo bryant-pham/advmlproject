@@ -37,7 +37,7 @@ unlabeled_truth = np.insert(unlabeled_data, 0, unlabeled_labels, axis=1)
 unlabeled_truth_set = set([tuple(x) for x in unlabeled_truth])
 
 # Cotraining label prediction accuracy
-cotrain_predicted_data = cotrain_model.get_predicted_data()
+cotrain_predicted_data = cotrain_model.get_unlabeled_predictions()
 cotrain_predicted_set = set([tuple(x) for x in cotrain_predicted_data])
 cotrain_correct_matches = np.array([x for x in cotrain_predicted_set & unlabeled_truth_set])
 print('cotraining labeling accuracy: %s' % (len(cotrain_correct_matches) / len(cotrain_predicted_data)))

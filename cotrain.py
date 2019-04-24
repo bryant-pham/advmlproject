@@ -59,15 +59,21 @@ class Cotrain:
                 confident_row_indices = matching_rows[:, 0].flatten()
                 confident_rows = unlabeled_copy[confident_row_indices]
                 confident_labels = matching_rows[:, 1].flatten()
+
+                # Add confident rows to labeled data
                 self.labeled_data = np.vstack([self.labeled_data, confident_rows])
                 self.labels = np.concatenate((self.labels, confident_labels))
                 confident_one_hot_labels = self.label_one_hot_encode(confident_labels)
                 converged = len(confident_labels) == 0
+
+                # Delete unconfident rows from unlabeled data
                 unlabeled_copy = np.delete(unlabeled_copy, confident_row_indices, axis=0)
+
                 self.num_labeled.append(confident_rows.shape[0])
                 confident_rows_with_labels = np.insert(confident_rows, 0, confident_labels, axis=1)
                 self.add_to_predicted(confident_rows_with_labels)
 
+                # Refit models
                 self.nn.fit(confident_rows, confident_one_hot_labels, epochs=50, batch_size=10)
                 self.svm.fit(self.labeled_data, self.labels)
         self.unpredicted = unlabeled_copy
@@ -89,7 +95,7 @@ class Cotrain:
     def get_unpredicted_data(self):
         return self.unpredicted
 
-    def get_predicted_data(self):
+    def get_unlabeled_predictions(self):
         return self.predicted
 
     def add_to_predicted(self, predicted_rows):

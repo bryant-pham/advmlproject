@@ -35,7 +35,7 @@ unlabeled_truth = np.insert(unlabeled_data, 0, unlabeled_labels, axis=1)
 unlabeled_truth_set = set([tuple(x) for x in unlabeled_truth])
 
 # Clustering prediction accuracy
-cluster_predicted_data = kmeans.get_predicted_data()
+cluster_predicted_data = kmeans.get_unlabeled_predictions()
 cluster_predicted_set = set([tuple(x) for x in cluster_predicted_data])
 cluster_correct_matches = np.array([x for x in cluster_predicted_set & unlabeled_truth_set])
 print('clustering labeling accuracy: %s' % (len(cluster_correct_matches) / len(cluster_predicted_data)))

@@ -39,31 +39,41 @@ unlabeled_truth = np.insert(unlabeled_data, 0, unlabeled_labels, axis=1)
 unlabeled_truth_set = set([tuple(x) for x in unlabeled_truth])
 
 # Cotraining label prediction accuracy
-cotrain_predicted_data = cotrain_model.get_predicted_data()
-cotrain_predicted_set = set([tuple(x) for x in cotrain_predicted_data])
-cotrain_correct_matches = np.array([x for x in cotrain_predicted_set & unlabeled_truth_set])
-print('cotraining labeling accuracy: %s' % (len(cotrain_correct_matches) / len(cotrain_predicted_data)))
+cotrain_unlabeled_predictions = cotrain_model.get_unlabeled_predictions()
+cotrain_unlabeled_predictions_set = set([tuple(x) for x in cotrain_unlabeled_predictions])
+cotrain_correct_matches = np.array([x for x in cotrain_unlabeled_predictions_set & unlabeled_truth_set])
+print('cotraining labeling accuracy: %s' % (len(cotrain_correct_matches) / len(cotrain_unlabeled_predictions)))
 print()
 
 cotrain_unpredicted_data = cotrain_model.get_unpredicted_data()
 kmeans = SemiSupervisedKMeans(num_clusters=2)
 kmeans.initialize(training_data, training_labels)
-kmeans.fit(cotrain_unpredicted_data, 4)
+kmeans.fit(unlabeled_data, 7)
 
 # Clustering prediction accuracy
-cluster_predicted_data = kmeans.get_predicted_data()
-cluster_predicted_set = set([tuple(x) for x in cluster_predicted_data])
-cluster_correct_matches = np.array([x for x in cluster_predicted_set & unlabeled_truth_set])
-print('clustering labeling accuracy: %s' % (len(cluster_correct_matches) / len(cluster_predicted_data)))
+cluster_unlabeled_predictions = kmeans.get_unlabeled_predictions()
+cluster_unlabeled_predictions_set = set([tuple(x) for x in cluster_unlabeled_predictions])
+cluster_correct_matches = np.array([x for x in cluster_unlabeled_predictions_set & unlabeled_truth_set])
+print('clustering labeling accuracy: %s' % (len(cluster_correct_matches) / len(cluster_unlabeled_predictions)))
 print()
 
+labeled_data = np.insert(training_data, 0, training_labels, axis=1)
+remaining_unlabeled_predictions = kmeans.predict(cotrain_unpredicted_data, 6)
+complete_training_data = np.vstack([labeled_data, cotrain_unlabeled_predictions, remaining_unlabeled_predictions])
+
+# Remaining data labeling accuracy
+remaining_unlabeled_predictions_set = set([tuple(x) for x in remaining_unlabeled_predictions])
+remaining_preds_correct_matches = np.array([x for x in remaining_unlabeled_predictions_set & unlabeled_truth_set])
+print('clustering remaining data labeling accuracy: %s' % (len(remaining_preds_correct_matches) / len(remaining_unlabeled_predictions)))
+print()
+
+
 # Combined SVM performance
-new_labeled_data = np.vstack([cotrain_model.get_full_labeled_data(), kmeans.get_full_labeled_data()])
-labels = new_labeled_data[:, 0]
-new_labeled_data = new_labeled_data[:, 1:]
+labels_for_complete_training_data = complete_training_data[:, 0]
+complete_training_data_no_labels = complete_training_data[:, 1:]
 clf = SVC(gamma='auto', C=1)
 # clf.fit(all_data, labels)
 
-scores = cross_val_score(clf, new_labeled_data, labels, cv=10)
+scores = cross_val_score(clf, complete_training_data_no_labels, labels_for_complete_training_data, cv=10)
 print('combined svm cv scores: %s' % scores)
 print("combined svm Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
