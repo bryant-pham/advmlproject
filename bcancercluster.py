@@ -44,5 +44,5 @@ clf = SVC(gamma='auto', C=1)
 # clf.fit(all_data, labels)
 
 scores = cross_val_score(clf, new_labeled_data, labels, cv=10)
-print('cv scores: %s' % scores)
-print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+print('cotrain svm cv scores: %s' % scores)
+print("cotrain svm Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))

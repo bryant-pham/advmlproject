@@ -23,7 +23,7 @@ class Cotrain:
         nn_label_one_hot_encode = self.label_one_hot_encode(labels)
         shape = labeled_data[0].shape
         self.nn = Sequential()
-        self.nn.add(Dense(32, activation='relu', input_shape=shape))
+        self.nn.add(Dense(5, activation='relu', input_shape=shape))
         # self.nn.add(Dense(64, activation='relu'))
         self.nn.add(Dense(units=num_unique_labels, activation='softmax'))
         self.nn.compile(optimizer='adadelta',

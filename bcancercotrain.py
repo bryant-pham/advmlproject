@@ -30,7 +30,7 @@ print('unlabeled count: %s' % unlabeled_data.shape[0])
 
 cotrain_model = Cotrain()
 cotrain_model.initialize(training_data, training_labels)
-predicted_labels = cotrain_model.fit(unlabeled_data, 0.7)
+predicted_labels = cotrain_model.fit(unlabeled_data, 0.78)
 
 # Unlabeled prediction accuracy
 not_predicted = np.where(predicted_labels == -1)
