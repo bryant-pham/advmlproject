@@ -13,7 +13,9 @@ class Cotrain:
         self.labeled_data = None
         self.labels = None
         self.enc = None
-        self.num_labeled = 0
+        self.num_labeled = list()
+        self.unpredicted = None
+        self.predicted = None
 
     def initialize(self, labeled_data, labels):
         self.labeled_data = labeled_data
@@ -39,7 +41,6 @@ class Cotrain:
 
     def fit(self, unlabeled_data, conf_threshold):
         unlabeled_copy = np.copy(unlabeled_data)
-        labels_for_unlabeled_data = np.full(unlabeled_copy.shape[0], -1)
         converged = False
         while not converged:
             nn_preds = self.nn.predict_proba(unlabeled_copy)
@@ -63,16 +64,17 @@ class Cotrain:
                 confident_one_hot_labels = self.label_one_hot_encode(confident_labels)
                 converged = len(confident_labels) == 0
                 unlabeled_copy = np.delete(unlabeled_copy, confident_row_indices, axis=0)
-                self.num_labeled += len(confident_rows)
-                labels_for_unlabeled_data[confident_row_indices] = confident_labels
+                self.num_labeled.append(confident_rows.shape[0])
+                confident_rows_with_labels = np.insert(confident_rows, 0, confident_labels, axis=1)
+                self.add_to_predicted(confident_rows_with_labels)
 
                 self.nn.fit(confident_rows, confident_one_hot_labels, epochs=50, batch_size=10)
                 self.svm.fit(self.labeled_data, self.labels)
+        self.unpredicted = unlabeled_copy
 
         print('total unlabeled: %s ' % len(unlabeled_data))
-        print('total labels given: %s ' % self.num_labeled)
-
-        return labels_for_unlabeled_data
+        print('total labels given: %s ' % len(self.predicted) if self.predicted is not None else 0)
+        print('num_labeled: %s' % np.sum(self.num_labeled))
 
     def label_one_hot_encode(self, labels):
         label_reshape = labels.reshape(-1, 1)
@@ -81,5 +83,17 @@ class Cotrain:
             self.enc.fit(label_reshape)
         return self.enc.transform(label_reshape).toarray()
 
-    def get_labeled_data(self):
+    def get_full_labeled_data(self):
         return np.insert(self.labeled_data, 0, self.labels, axis=1)  # Add label to unlabeled point
+
+    def get_unpredicted_data(self):
+        return self.unpredicted
+
+    def get_predicted_data(self):
+        return self.predicted
+
+    def add_to_predicted(self, predicted_rows):
+        if self.predicted is None:
+            self.predicted = predicted_rows
+        else:
+            self.predicted = np.vstack([self.predicted, predicted_rows])

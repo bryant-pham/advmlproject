@@ -30,21 +30,26 @@ print('unlabeled count: %s' % unlabeled_data.shape[0])
 
 cotrain_model = Cotrain()
 cotrain_model.initialize(training_data, training_labels)
-predicted_labels = cotrain_model.fit(unlabeled_data, 0.78)
+cotrain_model.fit(unlabeled_data, 0.75)
 
-# Unlabeled prediction accuracy
-not_predicted = np.where(predicted_labels == -1)
-predicted_labels = np.delete(predicted_labels, not_predicted)
-unlabeled_labels = np.delete(unlabeled_labels, not_predicted)
-print('labeling accuracy: %s' % (1 - np.mean(unlabeled_labels != predicted_labels)))
+# Label prediction accuracy setup
+unlabeled_truth = np.insert(unlabeled_data, 0, unlabeled_labels, axis=1)
+unlabeled_truth_set = set([tuple(x) for x in unlabeled_truth])
+
+# Cotraining label prediction accuracy
+cotrain_predicted_data = cotrain_model.get_predicted_data()
+cotrain_predicted_set = set([tuple(x) for x in cotrain_predicted_data])
+cotrain_correct_matches = np.array([x for x in cotrain_predicted_set & unlabeled_truth_set])
+print('cotraining labeling accuracy: %s' % (len(cotrain_correct_matches) / len(cotrain_predicted_data)))
+print()
 
 # SVM performance
-new_labeled_data = cotrain_model.get_labeled_data()
+new_labeled_data = cotrain_model.get_full_labeled_data()
 labels = new_labeled_data[:, 0]
 new_labeled_data = new_labeled_data[:, 1:]
 clf = SVC(gamma='auto', C=1)
 # clf.fit(all_data, labels)
 
 scores = cross_val_score(clf, new_labeled_data, labels, cv=10)
-print('cv scores: %s' % scores)
-print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+print('cotrain cv scores: %s' % scores)
+print("cotrain Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
