@@ -14,14 +14,14 @@ def label_one_hot_encode(labels):
     return enc.transform(label_reshape).toarray()
 
 
-f = open('datasets/breastcancer/breastcancer-labeled.csv')
+f = open('datasets/breastcancer/breastcancer-labeled2.csv')
 df = pd.read_csv(f)
 
 total_count = df.shape[0]
 train_count = int(total_count)
 test_count = total_count - train_count
 
-total_runs = 500
+total_runs = 10
 all_stats = np.empty((total_runs, 2))
 sample = 0
 

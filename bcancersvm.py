@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.svm import SVC
 from sklearn.model_selection import cross_val_score
 
-f = open('datasets/breastcancer/breastcancer-labeled.csv')
+f = open('datasets/breastcancer/breastcancer-labeled2.csv')
 df = pd.read_csv(f)
 
 total_count = df.shape[0]

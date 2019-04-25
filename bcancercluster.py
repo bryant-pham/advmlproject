@@ -4,8 +4,8 @@ from clustering import SemiSupervisedKMeans
 from sklearn.svm import SVC
 from sklearn.model_selection import cross_val_score
 
-f = open('datasets/breastcancer/breastcancer-labeled.csv')
-u = open('datasets/breastcancer/breastcancer-unlabeled.csv')
+f = open('datasets/breastcancer/breastcancer-labeled2.csv')
+u = open('datasets/breastcancer/breastcancer-unlabeled2.csv')
 df = pd.read_csv(f)
 udf = pd.read_csv(u)
 

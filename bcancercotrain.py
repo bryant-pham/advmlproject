@@ -4,8 +4,8 @@ from cotrain import Cotrain
 from sklearn.svm import SVC
 from sklearn.model_selection import cross_val_score
 
-f = open('datasets/breastcancer/breastcancer-labeled.csv')
-u = open('datasets/breastcancer/breastcancer-unlabeled.csv')
+f = open('datasets/breastcancer/breastcancer-labeled2.csv')
+u = open('datasets/breastcancer/breastcancer-unlabeled2.csv')
 df = pd.read_csv(f)
 udf = pd.read_csv(u)
 
@@ -13,7 +13,7 @@ total_count = df.shape[0]
 train_count = int(total_count)
 test_count = total_count - train_count
 
-total_runs = 500
+total_runs = 100
 all_stats = np.empty((total_runs, 4))
 sample = 0
 
