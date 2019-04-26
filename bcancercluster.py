@@ -51,7 +51,7 @@ while sample < total_runs:
         new_labeled_data = kmeans.get_full_labeled_data()
         labels = new_labeled_data[:, 0]
         new_labeled_data = new_labeled_data[:, 1:]
-        clf = SVC(gamma='auto', C=1)
+        clf = SVC(gamma=0.001, C=10, kernel='rbf')
 
         scores = cross_val_score(clf, new_labeled_data, labels, cv=10)
         avg_score = scores.mean()

@@ -33,7 +33,7 @@ class Cotrain:
                       metrics=['accuracy'])
         self.nn.fit(labeled_data, nn_label_one_hot_encode, epochs=50, batch_size=10)
 
-        self.svm = SVC(gamma='auto', C=1, probability=True)
+        self.svm = SVC(kernel='rbf', C=100, gamma=0.001, probability=True)
         self.svm.fit(labeled_data, labels)
         # scores = cross_val_score(self.svm, labeled_data, labels, cv=10)
         # print('svm cv scores: %s' % scores)
@@ -80,7 +80,6 @@ class Cotrain:
 
         print('total unlabeled: %s ' % len(unlabeled_data))
         print('total labels given: %s ' % len(self.predicted) if self.predicted is not None else 0)
-        print('num_labeled: %s' % np.sum(self.num_labeled))
 
     def label_one_hot_encode(self, labels):
         label_reshape = labels.reshape(-1, 1)

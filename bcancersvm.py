@@ -26,7 +26,7 @@ while sample < total_runs:
         print('test count: %s' % test_count)
 
         # SVM performance
-        clf = SVC(gamma='auto', C=1)
+        clf = SVC(kernel='rbf', C=100, gamma=0.001)
 
         scores = cross_val_score(clf, training_data, training_labels, cv=10)
         avg_score = scores.mean()

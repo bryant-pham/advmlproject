@@ -19,10 +19,7 @@ sample = 0
 
 while sample < total_runs:
     try:
-        training_data = df.sample(train_count, replace=True)
-        test_sample = df[~df.index.isin(training_data.index)]
-
-        training_data = training_data.values
+        training_data = df.values
         training_labels = training_data[:, 0]
         training_data = np.delete(training_data, 0, 1)
         unlabeled_data = udf.values
@@ -30,12 +27,11 @@ while sample < total_runs:
         unlabeled_data = np.delete(unlabeled_data, 0, 1)
 
         print('training count: %s' % train_count)
-        print('test count: %s' % test_count)
         print('unlabeled count: %s' % unlabeled_data.shape[0])
 
         cotrain_model = Cotrain()
         cotrain_model.initialize(training_data, training_labels)
-        cotrain_model.fit(unlabeled_data, 0.75)
+        cotrain_model.fit(unlabeled_data, 0.80)
 
         # Label prediction accuracy setup
         unlabeled_truth = np.insert(unlabeled_data, 0, unlabeled_labels, axis=1)
@@ -53,7 +49,7 @@ while sample < total_runs:
         new_labeled_data = cotrain_model.get_full_labeled_data()
         labels = new_labeled_data[:, 0]
         new_labeled_data = new_labeled_data[:, 1:]
-        clf = SVC(gamma='auto', C=1)
+        clf = SVC(gamma=0.0001, C=1000, kernel='rbf')
 
         scores = cross_val_score(clf, new_labeled_data, labels, cv=10)
         avg_score = scores.mean()

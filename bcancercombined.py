@@ -23,10 +23,7 @@ kfold = StratifiedKFold(n_splits=10, shuffle=True)
 
 while sample < total_runs:
     try:
-        training_data = df.sample(train_count, replace=True)
-        test_sample = df[~df.index.isin(training_data.index)]
-
-        training_data = training_data.values
+        training_data = df.values
         training_labels = training_data[:, 0]
         training_data = np.delete(training_data, 0, 1)
         unlabeled_data = udf.values
@@ -34,13 +31,12 @@ while sample < total_runs:
         unlabeled_data = np.delete(unlabeled_data, 0, 1)
 
         print('cotraining training count: %s' % train_count)
-        print('cotraining test count: %s' % test_count)
         print('cotraining unlabeled count: %s' % unlabeled_data.shape[0])
         print()
 
         cotrain_model = Cotrain()
         cotrain_model.initialize(training_data, training_labels)
-        cotrain_model.fit(unlabeled_data, 0.75)
+        cotrain_model.fit(unlabeled_data, 0.8)
 
         # Label prediction accuracy setup
         unlabeled_truth = np.insert(unlabeled_data, 0, unlabeled_labels, axis=1)
@@ -81,7 +77,7 @@ while sample < total_runs:
         # Combined SVM performance
         labels_for_complete_training_data = complete_training_data[:, 0]
         complete_training_data_no_labels = complete_training_data[:, 1:]
-        clf = SVC(gamma='auto', C=1)
+        clf = SVC(gamma=0.001, C=10, kernel='rbf')
 
         scores = cross_val_score(clf, complete_training_data_no_labels, labels_for_complete_training_data, cv=10)
         avg_score = scores.mean()
