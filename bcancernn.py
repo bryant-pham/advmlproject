@@ -29,8 +29,7 @@ kfold = StratifiedKFold(n_splits=10, shuffle=True)
 
 while sample < total_runs:
     try:
-        training_data = df.sample(train_count, replace=True)
-        training_data = training_data.values
+        training_data = df.values
         training_labels = training_data[:, 0]
         training_data = np.delete(training_data, 0, 1)
         training_one_hot_encoded_labels = label_one_hot_encode(training_labels)

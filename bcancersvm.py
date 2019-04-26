@@ -15,15 +15,10 @@ all_stats = np.empty((total_runs, 2))
 sample = 0
 while sample < total_runs:
     try:
-        training_data = df.sample(train_count, replace=True)
-        test_sample = df[~df.index.isin(training_data.index)]
-
-        training_data = training_data.values
+        training_data = df.values
         training_labels = training_data[:, 0]
         training_data = np.delete(training_data, 0, 1)
-
         print('training count: %s' % train_count)
-        print('test count: %s' % test_count)
 
         # SVM performance
         clf = SVC(kernel='rbf', C=100, gamma=0.001)
