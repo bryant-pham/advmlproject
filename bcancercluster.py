@@ -3,7 +3,10 @@ import pandas as pd
 from clustering import SemiSupervisedKMeans
 from sklearn.svm import SVC
 from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import StratifiedKFold
 
+np.set_printoptions(precision=4)
+np.set_printoptions(suppress=True)
 f = open('datasets/breastcancer/breastcancer-labeled2.csv')
 u = open('datasets/breastcancer/breastcancer-unlabeled2.csv')
 df = pd.read_csv(f)
@@ -13,9 +16,11 @@ total_count = df.shape[0]
 train_count = int(total_count)
 test_count = total_count - train_count
 
-total_runs = 500
+total_runs = 50
 all_stats = np.empty((total_runs, 4))
 sample = 0
+
+kfold = StratifiedKFold(n_splits=10, shuffle=True)
 
 while sample < total_runs:
     try:
@@ -43,15 +48,27 @@ while sample < total_runs:
         print()
 
         # Combined SVM performance
-        new_labeled_data = kmeans.get_full_labeled_data()
-        labels = new_labeled_data[:, 0]
-        new_labeled_data = new_labeled_data[:, 1:]
-        clf = SVC(gamma=0.001, C=10, kernel='rbf')
+        all_predicted_data = cluster_unlabeled_predictions
+        all_predicted_labels = all_predicted_data[:, 0]
+        all_predicted_data = all_predicted_data[:, 1:]
+        cvscores = list()
+        for train, test in kfold.split(training_data, training_labels):
+            clf = SVC(gamma='auto', C=1, kernel='rbf')
+            kfold_labeled_data = training_data[train]
+            kfold_labeled_labels = training_labels[train]
+            kfold_test_data = training_data[test]
+            kfold_test_labels = training_labels[test]
+            kfold_train = np.vstack([kfold_labeled_data, all_predicted_data])
+            kfold_train_labels = np.concatenate([kfold_labeled_labels, all_predicted_labels])
+            clf.fit(kfold_train, kfold_train_labels)
+            score = clf.score(kfold_test_data, kfold_test_labels)
+            cvscores.append(score)
 
-        scores = cross_val_score(clf, new_labeled_data, labels, cv=10)
-        avg_score = scores.mean()
-        print('cluster svm cv scores: %s' % scores)
-        print("cluster svm Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+        avg_score = np.mean(cvscores)
+        cv_stddev = np.std(cvscores)
+        print('combined cv scores: %s' % cvscores)
+        print("combined Accuracy: %0.2f (+/- %0.2f)" % (avg_score, cv_stddev * 2))
+        print()
 
         total_unlabeled_count = len(unlabeled_data)
         cluster_labels_given = len(cluster_unlabeled_predictions)

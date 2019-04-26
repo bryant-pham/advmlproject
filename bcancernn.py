@@ -14,6 +14,8 @@ def label_one_hot_encode(labels):
     return enc.transform(label_reshape).toarray()
 
 
+np.set_printoptions(precision=4)
+np.set_printoptions(suppress=True)
 f = open('datasets/breastcancer/breastcancer-labeled2.csv')
 df = pd.read_csv(f)
 

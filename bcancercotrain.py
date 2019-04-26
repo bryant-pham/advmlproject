@@ -3,7 +3,10 @@ import pandas as pd
 from cotrain import Cotrain
 from sklearn.svm import SVC
 from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import StratifiedKFold
 
+np.set_printoptions(precision=4)
+np.set_printoptions(suppress=True)
 f = open('datasets/breastcancer/breastcancer-labeled2.csv')
 u = open('datasets/breastcancer/breastcancer-unlabeled2.csv')
 df = pd.read_csv(f)
@@ -11,11 +14,12 @@ udf = pd.read_csv(u)
 
 total_count = df.shape[0]
 train_count = int(total_count)
-test_count = total_count - train_count
 
-total_runs = 100
+total_runs = 50
 all_stats = np.empty((total_runs, 4))
 sample = 0
+
+kfold = StratifiedKFold(n_splits=10, shuffle=True)
 
 while sample < total_runs:
     try:
@@ -31,7 +35,7 @@ while sample < total_runs:
 
         cotrain_model = Cotrain()
         cotrain_model.initialize(training_data, training_labels)
-        cotrain_model.fit(unlabeled_data, 0.80)
+        cotrain_model.fit(unlabeled_data, 0.65)
 
         # Label prediction accuracy setup
         unlabeled_truth = np.insert(unlabeled_data, 0, unlabeled_labels, axis=1)
@@ -46,15 +50,26 @@ while sample < total_runs:
         print()
 
         # SVM performance
-        new_labeled_data = cotrain_model.get_full_labeled_data()
-        labels = new_labeled_data[:, 0]
-        new_labeled_data = new_labeled_data[:, 1:]
-        clf = SVC(gamma=0.0001, C=1000, kernel='rbf')
+        all_predicted_data = cotrain_unlabeled_predictions
+        all_predicted_labels = all_predicted_data[:, 0]
+        all_predicted_data = all_predicted_data[:, 1:]
+        cvscores = list()
+        for train, test in kfold.split(training_data, training_labels):
+            clf = SVC(gamma='auto', C=1, kernel='rbf')
+            kfold_labeled_data = training_data[train]
+            kfold_labeled_labels = training_labels[train]
+            kfold_test_data = training_data[test]
+            kfold_test_labels = training_labels[test]
+            kfold_train = np.vstack([kfold_labeled_data, all_predicted_data])
+            kfold_train_labels = np.concatenate([kfold_labeled_labels, all_predicted_labels])
+            clf.fit(kfold_train, kfold_train_labels)
+            score = clf.score(kfold_test_data, kfold_test_labels)
+            cvscores.append(score)
 
-        scores = cross_val_score(clf, new_labeled_data, labels, cv=10)
-        avg_score = scores.mean()
-        print('cotrain cv scores: %s' % scores)
-        print("cotrain Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+        avg_score = np.mean(cvscores)
+        cv_stddev = np.std(cvscores)
+        print('cotrain cv scores: %s' % cvscores)
+        print("cotrain Accuracy: %0.2f (+/- %0.2f)" % (avg_score, cv_stddev * 2))
 
         total_unlabeled_count = len(unlabeled_data)
         cotrain_labels_given = len(cotrain_unlabeled_predictions)

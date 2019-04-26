@@ -3,6 +3,8 @@ import pandas as pd
 from sklearn.svm import SVC
 from sklearn.model_selection import cross_val_score
 
+np.set_printoptions(precision=4)
+np.set_printoptions(suppress=True)
 f = open('datasets/breastcancer/breastcancer-labeled2.csv')
 df = pd.read_csv(f)
 
@@ -21,7 +23,8 @@ while sample < total_runs:
         print('training count: %s' % train_count)
 
         # SVM performance
-        clf = SVC(kernel='rbf', C=100, gamma=0.001)
+        # clf = SVC(kernel='rbf', C=100, gamma=0.001)
+        clf = SVC(kernel='rbf', C=1, gamma='auto')
 
         scores = cross_val_score(clf, training_data, training_labels, cv=10)
         avg_score = scores.mean()

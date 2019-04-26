@@ -33,7 +33,8 @@ class Cotrain:
                       metrics=['accuracy'])
         self.nn.fit(labeled_data, nn_label_one_hot_encode, epochs=50, batch_size=10)
 
-        self.svm = SVC(kernel='rbf', C=100, gamma=0.001, probability=True)
+        # self.svm = SVC(kernel='rbf', C=100, gamma=0.001, probability=True)
+        self.svm = SVC(kernel='rbf', C=1, gamma='auto', probability=True)
         self.svm.fit(labeled_data, labels)
         # scores = cross_val_score(self.svm, labeled_data, labels, cv=10)
         # print('svm cv scores: %s' % scores)
