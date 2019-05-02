@@ -7,8 +7,8 @@ from sklearn.model_selection import StratifiedKFold
 from pathlib import Path
 
 base_path = Path(__file__).parent
-labeled_path = (base_path / "../datasets/Income/adult-labeled.csv").resolve()
-unlabeled_path = (base_path / "../datasets/Income/adult-unlabeled.csv").resolve()
+labeled_path = (base_path / "../datasets/Income/adult-labeled2.csv").resolve()
+unlabeled_path = (base_path / "../datasets/Income/adult-unlabeled2.csv").resolve()
 
 f = open(labeled_path)
 u = open(unlabeled_path)
@@ -39,7 +39,7 @@ while sample < total_runs:
         kmeans = SemiSupervisedKMeans(num_clusters=2)
         kmeans.initialize(training_data, training_labels)
         # kmeans.fit(unlabeled_data, 3490)
-        kmeans.fit(unlabeled_data, 4500)
+        kmeans.fit(unlabeled_data, 9000)
 
         # Label prediction accuracy setup
         unlabeled_truth = np.insert(unlabeled_data, 0, unlabeled_labels, axis=1)
@@ -59,7 +59,7 @@ while sample < total_runs:
         all_predicted_data = all_predicted_data[:, 1:]
         cvscores = list()
         for train, test in kfold.split(training_data, training_labels):
-            clf = SVC(gamma=0.0001, C=100, kernel='rbf')
+            clf = SVC(gamma=0.001, C=1, kernel='rbf')
             kfold_labeled_data = training_data[train]
             kfold_labeled_labels = training_labels[train]
             kfold_test_data = training_data[test]

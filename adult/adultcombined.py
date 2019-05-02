@@ -43,10 +43,10 @@ print('cotraining unlabeled count: %s' % unlabeled_data.shape[0])
 print()
 
 cotrain_model = Cotrain()
-nn_args = {'hidden_nodes': 8, 'epochs': 50, 'batch_size': 100}
-svm_args = {'kernel': 'rbf', 'c': 100, 'gamma': 0.0001}
+nn_args = {'hidden_nodes': 10, 'epochs': 50, 'batch_size': 100}
+svm_args = {'kernel': 'rbf', 'c': 1000, 'gamma': 0.0001}
 cotrain_model.initialize(training_data, training_labels, nn_args, svm_args)
-cotrain_model.fit(unlabeled_data, 0.6)
+cotrain_model.fit(unlabeled_data, 0.59)
 
 # Label prediction accuracy setup
 unlabeled_truth = np.insert(unlabeled_data, 0, unlabeled_labels, axis=1)
@@ -65,7 +65,7 @@ print()
 cotrain_unpredicted_data = cotrain_model.get_unpredicted_data()
 kmeans = SemiSupervisedKMeans(num_clusters=2)
 kmeans.initialize(training_data, training_labels)
-kmeans.fit(unlabeled_data, 4500)
+kmeans.fit(unlabeled_data, 9000)
 
 # Clustering prediction accuracy
 cluster_unlabeled_predictions = kmeans.get_unlabeled_predictions()
@@ -76,7 +76,7 @@ print('clustering labeling accuracy: %s' % cluster_label_acc)
 print()
 
 labeled_data = np.insert(training_data, 0, training_labels, axis=1)
-remaining_unlabeled_predictions = kmeans.predict(cotrain_unpredicted_data, 4500)
+remaining_unlabeled_predictions = kmeans.predict(cotrain_unpredicted_data, 9000)
 complete_training_data = np.vstack([labeled_data, cotrain_unlabeled_predictions, remaining_unlabeled_predictions])
 
 # Remaining data labeling accuracy
@@ -92,7 +92,7 @@ all_predicted_labels = all_predicted_data[:, 0]
 all_predicted_data = all_predicted_data[:, 1:]
 cvscores = list()
 for train, test in kfold.split(training_data, training_labels):
-    clf = SVC(gamma=0.0001, C=100, kernel='rbf')
+    clf = SVC(gamma='auto', C=1, kernel='rbf')
     kfold_labeled_data = training_data[train]
     kfold_labeled_labels = training_labels[train]
     kfold_test_data = training_data[test]

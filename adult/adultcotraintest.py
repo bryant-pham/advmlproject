@@ -9,8 +9,8 @@ from sklearn.metrics import classification_report
 from pathlib import Path
 
 base_path = Path(__file__).parent
-labeled_path = (base_path / "../datasets/Income/adult-labeled.csv").resolve()
-unlabeled_path = (base_path / "../datasets/Income/adult-unlabeled.csv").resolve()
+labeled_path = (base_path / "../datasets/Income/adult-labeled2.csv").resolve()
+unlabeled_path = (base_path / "../datasets/Income/adult-unlabeled2.csv").resolve()
 
 f = open(labeled_path)
 u = open(unlabeled_path)
@@ -31,10 +31,10 @@ print('training count: %s' % train_count)
 print('unlabeled count: %s' % unlabeled_data.shape[0])
 
 cotrain_model = Cotrain()
-nn_args = {'hidden_nodes': 8, 'epochs': 25, 'batch_size': 100}
-svm_args = {'kernel': 'rbf', 'c': 100, 'gamma': 0.0001}
+nn_args = {'hidden_nodes': 10, 'epochs': 50, 'batch_size': 100}
+svm_args = {'kernel': 'rbf', 'c': 1000, 'gamma': 0.0001}
 cotrain_model.initialize(training_data, training_labels, nn_args, svm_args)
-cotrain_model.fit(unlabeled_data, 0.6)
+cotrain_model.fit(unlabeled_data, 0.59)
 
 # Label prediction accuracy setup
 unlabeled_truth = np.insert(unlabeled_data, 0, unlabeled_labels, axis=1)
@@ -66,7 +66,7 @@ for score in scores:
     print("# Tuning hyper-parameters for %s" % score)
     print()
 
-    clf = GridSearchCV(SVC(), tuned_parameters, cv=5,
+    clf = GridSearchCV(SVC(), tuned_parameters, cv=10,
                        scoring='%s' % score)
     clf.fit(X_train, y_train)
 

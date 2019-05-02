@@ -5,7 +5,7 @@ from sklearn.model_selection import cross_val_score
 from pathlib import Path
 
 base_path = Path(__file__).parent
-path = (base_path / "../datasets/Income/adult-labeled.csv").resolve()
+path = (base_path / "../datasets/Income/adult-labeled2.csv").resolve()
 
 np.set_printoptions(precision=4)
 np.set_printoptions(suppress=True)
@@ -27,8 +27,8 @@ while sample < total_runs:
         print('training count: %s' % train_count)
 
         # SVM performance
-        # clf = SVC(kernel='rbf', C=100, gamma=0.001)
-        clf = SVC(kernel='rbf', C=100, gamma=0.0001)
+        # clf = SVC(kernel='rbf', C=100, gamma=0.0001)
+        clf = SVC(kernel='rbf', C=1000, gamma=0.0001)
 
         scores = cross_val_score(clf, training_data, training_labels, cv=10)
         avg_score = scores.mean()

@@ -9,8 +9,8 @@ from sklearn.metrics import classification_report
 from pathlib import Path
 
 base_path = Path(__file__).parent
-labeled_path = (base_path / "../datasets/Income/adult-labeled.csv").resolve()
-unlabeled_path = (base_path / "../datasets/Income/adult-unlabeled.csv").resolve()
+labeled_path = (base_path / "../datasets/Income/adult-labeled2.csv").resolve()
+unlabeled_path = (base_path / "../datasets/Income/adult-unlabeled2.csv").resolve()
 
 f = open(labeled_path)
 u = open(unlabeled_path)
@@ -31,7 +31,7 @@ kmeans = SemiSupervisedKMeans(num_clusters=2)
 kmeans.initialize(training_data, training_labels)
 # kmeans.fit(unlabeled_data, 3490)
 # kmeans.fit(unlabeled_data, 4500) #39
-kmeans.fit(unlabeled_data, 4500)
+kmeans.fit(unlabeled_data, 9000)
 
 # Label prediction accuracy setup
 unlabeled_truth = np.insert(unlabeled_data, 0, unlabeled_labels, axis=1)
@@ -60,32 +60,32 @@ tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-3, 1e-4],
 
 scores = ['accuracy']
 
-# for score in scores:
-#     print("# Tuning hyper-parameters for %s" % score)
-#     print()
-#
-#     clf = GridSearchCV(SVC(), tuned_parameters, cv=10,
-#                        scoring='%s' % score)
-#     clf.fit(X_train, y_train)
-#
-#     print("Best parameters set found on development set:")
-#     print()
-#     print(clf.best_params_)
-#     print()
-#     print("Grid scores on development set:")
-#     print()
-#     means = clf.cv_results_['mean_test_score']
-#     stds = clf.cv_results_['std_test_score']
-#     for mean, std, params in zip(means, stds, clf.cv_results_['params']):
-#         print("%0.3f (+/-%0.03f) for %r"
-#               % (mean, std * 2, params))
-#     print()
-#
-#     print("Detailed classification report:")
-#     print()
-#     print("The model is trained on the full development set.")
-#     print("The scores are computed on the full evaluation set.")
-#     print()
-#     y_true, y_pred = y_test, clf.predict(X_test)
-#     print(classification_report(y_true, y_pred))
-#     print()
+for score in scores:
+    print("# Tuning hyper-parameters for %s" % score)
+    print()
+
+    clf = GridSearchCV(SVC(), tuned_parameters, cv=10,
+                       scoring='%s' % score)
+    clf.fit(X_train, y_train)
+
+    print("Best parameters set found on development set:")
+    print()
+    print(clf.best_params_)
+    print()
+    print("Grid scores on development set:")
+    print()
+    means = clf.cv_results_['mean_test_score']
+    stds = clf.cv_results_['std_test_score']
+    for mean, std, params in zip(means, stds, clf.cv_results_['params']):
+        print("%0.3f (+/-%0.03f) for %r"
+              % (mean, std * 2, params))
+    print()
+
+    print("Detailed classification report:")
+    print()
+    print("The model is trained on the full development set.")
+    print("The scores are computed on the full evaluation set.")
+    print()
+    y_true, y_pred = y_test, clf.predict(X_test)
+    print(classification_report(y_true, y_pred))
+    print()
