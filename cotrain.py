@@ -18,24 +18,29 @@ class Cotrain:
         self.avg_nn_pred_confidence = 0
         self.avg_svm_pred_confidence = 0
 
-    def initialize(self, labeled_data, labels, num_hidden_nodes, svm_args=None):
+    def initialize(self, labeled_data, labels, nn_args, svm_args):
         self.labeled_data = labeled_data
         self.labels = labels
         num_unique_labels = len(np.unique(labels))
+        num_hidden_nodes = nn_args['hidden_nodes']
+        epochs = nn_args['epochs']
+        batch_size = nn_args['batch_size']
+        kernel = svm_args['kernel']
+        c = svm_args['c']
+        gamma = svm_args['gamma']
 
         nn_label_one_hot_encode = self.label_one_hot_encode(labels)
         shape = labeled_data[0].shape
         self.nn = Sequential()
         self.nn.add(Dense(num_hidden_nodes, activation='relu', input_shape=shape))
-        # self.nn.add(Dense(64, activation='relu'))
         self.nn.add(Dense(units=num_unique_labels, activation='softmax'))
         self.nn.compile(optimizer='adadelta',
                       loss='categorical_crossentropy',
                       metrics=['accuracy'])
-        self.nn.fit(labeled_data, nn_label_one_hot_encode, epochs=50, batch_size=10)
+        self.nn.fit(labeled_data, nn_label_one_hot_encode, epochs=epochs, batch_size=batch_size)
 
-        # self.svm = SVC(kernel='rbf', C=100, gamma=0.001, probability=True)
-        self.svm = SVC(kernel='rbf', C=1, gamma='auto', probability=True)
+        print('----- FITTING COTRAINING SVM -----')
+        self.svm = SVC(kernel=kernel, C=c, gamma=gamma, probability=True)
         self.svm.fit(labeled_data, labels)
         # scores = cross_val_score(self.svm, labeled_data, labels, cv=10)
         # print('svm cv scores: %s' % scores)
@@ -82,6 +87,9 @@ class Cotrain:
 
                 # Refit models
                 self.nn.fit(confident_rows, confident_one_hot_labels, epochs=50, batch_size=10)
+                print('----- REFITTING COTRAINING SVM -----')
+                print('# Confident predictions: %s' % confident_rows.shape[0])
+                print('# Unlabeled remaining: %s' % unlabeled_copy.shape[0])
                 self.svm.fit(self.labeled_data, self.labels)
         self.unpredicted = unlabeled_copy
         self.avg_nn_pred_confidence = np.mean(nn_most_confident_preds)
