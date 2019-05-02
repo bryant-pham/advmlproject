@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 from cotrain import Cotrain
 from sklearn.svm import SVC
-from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import StratifiedKFold
 
 np.set_printoptions(precision=4)
@@ -21,6 +20,9 @@ sample = 0
 
 kfold = StratifiedKFold(n_splits=10, shuffle=True)
 
+avg_nn_pred_confidence = list()
+avg_svm_pred_confidence = list()
+
 while sample < total_runs:
     try:
         training_data = df.values
@@ -35,13 +37,15 @@ while sample < total_runs:
 
         cotrain_model = Cotrain()
         cotrain_model.initialize(training_data, training_labels)
-        cotrain_model.fit(unlabeled_data, 0.65)
+        cotrain_model.fit(unlabeled_data, 0.7)
 
         # Label prediction accuracy setup
         unlabeled_truth = np.insert(unlabeled_data, 0, unlabeled_labels, axis=1)
         unlabeled_truth_set = set([tuple(x) for x in unlabeled_truth])
 
         # Cotraining label prediction accuracy
+        avg_nn_pred_confidence.append(cotrain_model.avg_nn_pred_confidence)
+        avg_svm_pred_confidence.append(cotrain_model.avg_svm_pred_confidence)
         cotrain_unlabeled_predictions = cotrain_model.get_unlabeled_predictions()
         cotrain_unlabeled_predictions_set = set([tuple(x) for x in cotrain_unlabeled_predictions])
         cotrain_correct_matches = np.array([x for x in cotrain_unlabeled_predictions_set & unlabeled_truth_set])
@@ -85,3 +89,5 @@ stddev = all_stats[:, 3:].flatten().std()
 mean_stats = np.insert(mean_stats, 4, stddev)
 np.savetxt('bcancercotrain.csv', mean_stats, fmt='%.3e', delimiter=',')
 print(mean_stats)
+print('avg nn confidence: %s' % np.mean(avg_nn_pred_confidence))
+print('avg svm confidence: %s' % np.mean(avg_svm_pred_confidence))

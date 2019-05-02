@@ -2,7 +2,6 @@ import numpy as np
 from sklearn.svm import SVC
 from keras.models import Sequential
 from keras.layers import Dense
-from sklearn.model_selection import cross_val_score
 from sklearn.preprocessing import OneHotEncoder
 
 
@@ -16,6 +15,8 @@ class Cotrain:
         self.num_labeled = list()
         self.unpredicted = None
         self.predicted = None
+        self.avg_nn_pred_confidence = 0
+        self.avg_svm_pred_confidence = 0
 
     def initialize(self, labeled_data, labels):
         self.labeled_data = labeled_data
@@ -43,12 +44,17 @@ class Cotrain:
     def fit(self, unlabeled_data, conf_threshold):
         unlabeled_copy = np.copy(unlabeled_data)
         converged = False
+        svm_most_confident_preds = list()
+        nn_most_confident_preds = list()
         while not converged:
             nn_preds = self.nn.predict_proba(unlabeled_copy)
             nn_rows_and_preds_above_thresh = np.argwhere(nn_preds >= conf_threshold)
 
             svm_preds = self.svm.predict_proba(unlabeled_copy)
             svm_rows_and_preds_above_thresh = np.argwhere(svm_preds >= conf_threshold)
+
+            svm_most_confident_preds += np.amax(svm_preds, axis=1).tolist()
+            nn_most_confident_preds += np.amax(nn_preds, axis=1).tolist()
 
             nn_set = set([tuple(x) for x in nn_rows_and_preds_above_thresh])
             svm_set = set([tuple(x) for x in svm_rows_and_preds_above_thresh])
@@ -78,9 +84,13 @@ class Cotrain:
                 self.nn.fit(confident_rows, confident_one_hot_labels, epochs=50, batch_size=10)
                 self.svm.fit(self.labeled_data, self.labels)
         self.unpredicted = unlabeled_copy
+        self.avg_nn_pred_confidence = np.mean(nn_most_confident_preds)
+        self.avg_svm_pred_confidence = np.mean(svm_most_confident_preds)
 
         print('total unlabeled: %s ' % len(unlabeled_data))
         print('total labels given: %s ' % len(self.predicted) if self.predicted is not None else 0)
+        print('avg nn confidence: %s' % self.avg_nn_pred_confidence)
+        print('avg svm confidence: %s' % self.avg_svm_pred_confidence)
 
     def label_one_hot_encode(self, labels):
         label_reshape = labels.reshape(-1, 1)
@@ -103,3 +113,9 @@ class Cotrain:
             self.predicted = predicted_rows
         else:
             self.predicted = np.vstack([self.predicted, predicted_rows])
+
+    def get_avg_nn_pred_confidence(self):
+        return self.avg_nn_pred_confidence
+
+    def get_avg_svm_pred_confidence(self):
+        return self.avg_svm_pred_confidence
