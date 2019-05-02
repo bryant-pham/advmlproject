@@ -36,7 +36,7 @@ while sample < total_runs:
         print('unlabeled count: %s' % unlabeled_data.shape[0])
 
         cotrain_model = Cotrain()
-        cotrain_model.initialize(training_data, training_labels)
+        cotrain_model.initialize(training_data, training_labels, 5)
         cotrain_model.fit(unlabeled_data, 0.7)
 
         # Label prediction accuracy setup
