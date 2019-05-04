@@ -2,10 +2,14 @@ import numpy as np
 import pandas as pd
 from sklearn.svm import SVC
 from sklearn.model_selection import cross_val_score
+from pathlib import Path
 
+base_path = Path(__file__).parent
+labeled_path = (base_path / "../datasets/breastcancer/breastcancer-labeled2.csv").resolve()
+
+f = open(labeled_path)
 np.set_printoptions(precision=4)
 np.set_printoptions(suppress=True)
-f = open('datasets/breastcancer/breastcancer-labeled2.csv')
 df = pd.read_csv(f)
 
 total_count = df.shape[0]

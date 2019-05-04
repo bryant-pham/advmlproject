@@ -36,8 +36,10 @@ while sample < total_runs:
         print('unlabeled count: %s' % unlabeled_data.shape[0])
 
         cotrain_model = Cotrain()
-        cotrain_model.initialize(training_data, training_labels, 5)
-        cotrain_model.fit(unlabeled_data, 0.7)
+        nn_args = {'hidden_nodes': 5, 'epochs': 50, 'batch_size': 10}
+        svm_args = {'kernel': 'rbf', 'c': 1, 'gamma': 'auto'}
+        cotrain_model.initialize(training_data, training_labels, nn_args, svm_args)
+        cotrain_model.fit(unlabeled_data, 0.65)
 
         # Label prediction accuracy setup
         unlabeled_truth = np.insert(unlabeled_data, 0, unlabeled_labels, axis=1)

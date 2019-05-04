@@ -44,7 +44,7 @@ cotrain_model = Cotrain()
 nn_args = {'hidden_nodes': 8, 'epochs': 50, 'batch_size': 100}
 svm_args = {'kernel': 'rbf', 'c': 100, 'gamma': 0.0001}
 cotrain_model.initialize(training_data, training_labels, nn_args, svm_args)
-cotrain_model.fit(unlabeled_data, 0.6)
+cotrain_model.fit(unlabeled_data, 0.65)
 
 # Label prediction accuracy setup
 unlabeled_truth = np.insert(unlabeled_data, 0, unlabeled_labels, axis=1)
